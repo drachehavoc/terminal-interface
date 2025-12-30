@@ -1,0 +1,62 @@
+{
+    "workbench.startupEditor"          : "none",
+    "workbench.tree.indent"            : 16,
+    "workbench.tree.renderIndentGuides": "always",
+    "workbench.activityBar.location"   : "top",
+    "workbench.tree.enableStickyScroll": true,
+    "workbench.sideBar.location"       : "right",
+    "window.restoreWindows"            : "none",
+    "editor.fontSize"                  : 16,
+    "editor.fontLigatures"             : false,
+    "editor.fontFamily"                : "'JetBrains Mono', 'Fira Code', monospace",
+    "editor.tabSize"                   : 2,
+    "editor.inlineSuggest.enabled"     : true,                                         // para forçar o uso do atalho ctrl+shift+space
+    "editor.rulers"                    : [90, 120],
+    "editor.minimap.enabled"           : false,
+    "explorer.confirmDelete"           : false,
+    
+    // --- File Exclusion Settings ------------------------------------------------------------------------------------
+    // "explorer.excludeGitIgnore": true,
+
+    "files.exclude": {
+        "**/node_modules" : true,
+        "**/dist"         : true,
+        "**/package.json" : true,
+        "**/tsconfig.json": true,
+        // "**/.*"           : true,
+        "**/*.lock"       : true,
+        "**/.gitignore"   : true,
+        "**/.git"         : true,
+        "**/.svn"         : true,
+        "**/.hg"          : true,
+        "**/.DS_Store"    : true,
+        "**/Thumbs.db"    : true
+    },
+
+    // --- File Nesting Settings ---------------------------------------------------------------------------------------
+    "explorer.fileNesting.enabled" : true,
+    "explorer.fileNesting.expand"  : false,
+    "explorer.autoOpenDroppedFile" : false,
+    "explorer.fileNesting.patterns": { "*.ts": "${capture}.*.ts" },
+        
+    // --- Automatic Configuration Separator ---------------------------------------------------------------------------
+    "#": "#",
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": false,
+        "markdown": true,
+        "scminput": false
+    },
+    "github.copilot.nextEditSuggestions.enabled": true,
+    // "editor.tokenColorCustomizations": {
+    //   "textMateRules": [
+    //     {
+    //       "scope": "comment.block.documentation",
+    //       "settings": {
+    //         "foreground": "#00FF00", // Cor dos comentários
+    //         "fontStyle" : "italic"
+    //       }
+    //     }
+    //   ]
+    // }
+}
