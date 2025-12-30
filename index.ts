@@ -3,9 +3,16 @@ import type { DrawArea } from "./.types.js"
 import raw from './raw.js'
 import Box from './Box.js'
 
+function keepWithinRange(value: number, min: number, max: number) {
+  if (value < min) return min
+  if (value > max) return max
+  return value
+}
+
 class DataView {
   #data
   #drawArea
+  #scroll = { top: 0, left: 0 }
 
   constructor(args: {
     drawArea: DrawArea,
@@ -43,33 +50,29 @@ class DataView {
     return Math.max(0, this.maxLines - this.#drawArea.height - 1)
   }
 
+  translate(scroll: { top?: number, left?: number }): this {
+    if (scroll.top != null) {
+      this.#scroll.top = keepWithinRange(this.#scroll.top + scroll.top, 0, this.maxScrollTop)
+    }
+    if (scroll.left != null) {
+      this.#scroll.left = keepWithinRange(this.#scroll.left + scroll.left, 0, this.maxScrollLeft)
+    }
+    return this
+  }
+
   // imprime o conteúdo iniciando linha e coluna, limitado em uma largura e altura
-  draw(scroll: { top: number, left: number }): this {
-    const maxScrollLeft = this.maxScrollLeft
-    const maxScrollTop = this.maxScrollTop
-    const scrollLeft = scroll.left > maxScrollLeft ? maxScrollLeft : scroll.left
-    const scrollTop = scroll.top > maxScrollTop ? maxScrollTop : scroll.top
+  draw(): this {
+    const scrollLeft = this.#scroll.left
+    const scrollTop = this.#scroll.top
     for (let i = 0; i <= this.#drawArea.height; i++) {
       let line = this.#data[i + scrollTop] ?? 'z'
       line = line.slice(scrollLeft, scrollLeft + this.#drawArea.width)
       raw.write({
         top: this.#drawArea.top + i,
         left: this.#drawArea.left,
-        content: line.padEnd(this.#drawArea.width, '~')
+        content: line.padEnd(this.#drawArea.width, '~'),
       })
     }
-
-    raw.write({ top: 0, left: 0, content: `` })
-    console.log({
-      left: {
-        scrollLeft,
-        maxScrollLeft
-      },
-      top: {
-        scrollTop,
-        maxScrollTop
-      }
-    })
     return this
   }
 }
@@ -85,42 +88,64 @@ const drawArea = {
 }
 
 const data = [
-    'line 1 ABCDEFGHIJKLMNOPQRSTUVWXYZ ABCDEFGHIJKLMNOPQRSTUVWXYZ ABCDEFGHIJKLMNOPQRSTUVWXYZ ',
-    'line 2 ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-    'line 3 ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-    'este é um testo muito bom para testar as funcionalidades',
-    'dessa aplicação, que tal?',
-    'vamos ver no que dá!',
-    'para ficar mais interessante, vamos adicionar mais linhas',
-    'e mais linhas ainda, até que fique bem grande o suficiente',
-    'assim podemos testar melhor as funcionalidades implementadas',
-    'e garantir que tudo funciona como esperado, sem erros ou falhas',
-    'vamos adicionar linhas realmente longas para ver como o sistema lida com isso',
-    'linha extra longa: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 |',
-    '>última linha do teste<',
-  ]
+  'line 1 ABCDEFGHIJKLMNOPQRSTUVWXYZ ABCDEFGHIJKLMNOPQRSTUVWXYZ ABCDEFGHIJKLMNOPQRSTUVWXYZ ',
+  'line 2 ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  'line 3 ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  'este é um testo muito bom para testar as funcionalidades',
+  'dessa aplicação, que tal?',
+  'vamos ver no que dá!',
+  'para ficar mais interessante, vamos adicionar mais linhas',
+  'e mais linhas ainda, até que fique bem grande o suficiente',
+  'assim podemos testar melhor as funcionalidades implementadas',
+  'e garantir que tudo funciona como esperado, sem erros ou falhas',
+  'vamos adicionar linhas realmente longas para ver como o sistema lida com isso',
+  'linha extra longa: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 |',
+  '>última linha do teste<',
+]
 
 const dv = new DataView({
-  drawArea: { ...drawArea, offset: 0 },
-  initialData: [...data, ...data, ...data, ...data] 
+  drawArea: { ...drawArea, offset: -1 },
+  initialData: [...data, ...data],
+  // initialData: [...data, ...data, ...data, ...data],
 })
+
+const dv2 = new DataView({
+  drawArea: { ...drawArea, top: 0, offset: -1 },
+  initialData: [...data, ...data],
+  // initialData: [...data, ...data, ...data, ...data],
+})
+
 
 const box = new Box({ ...drawArea, offset: 0 })
 
-let t = 0
-let l = 0
-const ex = () => {
-  console.clear()
-  console.log(Date.now())
+
+const tick = (e: string = "") => {
+  const key = e.toString()
+
+  if (key === 's') dv.translate({ top: 1 })
+  if (key === 'w') dv.translate({ top: -1 })
+  if (key === 'a') dv.translate({ left: -1 })
+  if (key === 'd') dv.translate({ left: 1 })
+
+  if (key === 'S') dv.translate({ top: 3 })
+  if (key === 'W') dv.translate({ top: -3 })
+  if (key === 'A') dv.translate({ left: -6 })
+  if (key === 'D') dv.translate({ left: 6 })
 
   box.draw()
-  dv.draw({ top: t++, left: l })
+  dv.draw()
+  dv2.draw()
 
+  if (key === '\u0003') 
+    process.exit() // ctrl + c
 }
-ex()
-setTimeout(() => {
-  setInterval(ex, 150);
-}, 1000)
+
+tick()
+dv.draw({})
+
+process.stdin.setRawMode(true)
+process.stdin.on('data', tick)
+
 
 
 
