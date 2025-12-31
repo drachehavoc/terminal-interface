@@ -29,13 +29,13 @@ exemplo_1: {
   const draw = () => {
     console.clear()
     // Posições responsivas
-    print(res1, '◢')    
+    print(res1, '◼')    
     print(res2, '◼')
-    print(res3, '◤')
+    print(res3, '◼')
 
     // Posições relativas ao res2 (centro)
-    print(rel1, '◢')
-    print(rel2, '◤')
+    print(rel1, '◼')
+    print(rel2, '◼')
   }
 
   process.stdout.on('resize', draw)
