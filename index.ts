@@ -1,21 +1,43 @@
-import { print } from "./AnsiEscs.print"
-import { TerminalRelativePosition } from "./TeminalRelativePosition"
 
 export type DrawArea = { top: number, left: number, width: number, height: number, offset?: number }
 
-const p0 = new TerminalRelativePosition(.25, .25)
-const p1 = new TerminalRelativePosition(.5, .5)
-const p2 = new TerminalRelativePosition(.75, .75)
+
+import { 
+  TerminalRelativePosition as Rel, 
+  TerminalResponsivePosition as Res 
+} from "./src/TerminalInterface"
+
+import { print } from "./src/AnsiEscs.print"
 
 // hide cursor
 process.stdout.write('\u001B[?25l')
 
-const draw = () => {
-  console.clear()
-  print(p0, '↘️')
-  print(p1, '↔️')
-  print(p2, '↖️')
-}
 
-process.stdout.on('resize', draw)
-draw()
+
+
+
+
+exemplo_1: {
+  // break exemplo_1
+  const res1 = new Res({ top: .25, left: .25 })
+  const res2 = new Res({ top: .5 , left: .5  })
+  const res3 = new Res({ top: .75, left: .75 })
+
+  const rel1 = new Rel({ position: res2, left: ({ left }) => left - 2, top: ({ top }) => top - 1 })
+  const rel2 = new Rel({ position: res2, left: ({ left }) => left + 2, top: ({ top }) => top + 1 })
+
+  const draw = () => {
+    console.clear()
+    // Posições responsivas
+    print(res1, '◢')    
+    print(res2, '◼')
+    print(res3, '◤')
+
+    // Posições relativas ao res2 (centro)
+    print(rel1, '◢')
+    print(rel2, '◤')
+  }
+
+  process.stdout.on('resize', draw)
+  draw()
+}

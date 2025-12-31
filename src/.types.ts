@@ -1,0 +1,1 @@
+export type TerminalPosition = { top: number, left: number }
