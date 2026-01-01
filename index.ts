@@ -26,6 +26,13 @@ exemplo_1: {
   const rel1 = new Rel({ position: res2, left: ({ left }) => left - 2, top: ({ top }) => top - 1 })
   const rel2 = new Rel({ position: res2, left: ({ left }) => left + 2, top: ({ top }) => top + 1 })
 
+  // Alternative using static factory methods:
+  // const res1 = Res.at(.25, .25)
+  // const res2 = Res.center()
+  // const res3 = Res.at(.75, .75)
+  // const rel1 = Rel.from(res2, { left: -2, top: -1 })
+  // const rel2 = Rel.from(res2, { left: 2, top: 1 })
+
   const draw = () => {
     console.clear()
     // Posições responsivas
