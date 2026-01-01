@@ -14,43 +14,20 @@ import { Format } from "./src/AnsiEscs.Format"
 process.stdout.write('\u001B[?25l')
 
 
-// Test getStamper function
-teste_getStamper: {
+// Example: Using getStamper to create reusable style functions
+exemplo_getStamper: {
   console.clear()
   
-  // Create a format with red foreground and bold decoration
-  const redBoldFormat = new Format({ fg: 31, dc: ['bold'] })
-  const redBoldStamper = redBoldFormat.getStamper()
+  // Create reusable stampers for different styles
+  const errorStamper = new Format({ fg: 31, dc: ['bold'] }).getStamper()
+  const successStamper = new Format({ fg: 32, dc: ['bold'] }).getStamper()
+  const warningStamper = new Format({ fg: 33 }).getStamper()
   
-  // Create a format with green background and italic decoration
-  const greenBgFormat = new Format({ bg: 42, dc: ['italic'] })
-  const greenBgStamper = greenBgFormat.getStamper()
+  console.log(errorStamper('ERROR: Something went wrong!'))
+  console.log(warningStamper('WARNING: Please check this.'))
+  console.log(successStamper('SUCCESS: Operation completed.'))
   
-  // Create a format with blue foreground, yellow background, and underline
-  const blueYellowFormat = new Format({ fg: 34, bg: 43, dc: ['underline'] })
-  const blueYellowStamper = blueYellowFormat.getStamper()
-  
-  // Test the stampers - they should apply the same styles to different texts
-  console.log('Testing getStamper function:\n')
-  console.log(redBoldStamper('Red and Bold Text 1'))
-  console.log(redBoldStamper('Red and Bold Text 2'))
-  console.log(redBoldStamper('Red and Bold Text 3'))
-  console.log('')
-  console.log(greenBgStamper('Green Background with Italic 1'))
-  console.log(greenBgStamper('Green Background with Italic 2'))
-  console.log('')
-  console.log(blueYellowStamper('Blue text on Yellow background with Underline'))
-  console.log(blueYellowStamper('Same style, different text'))
-  console.log('')
-  
-  // Compare with tx method for consistency
-  console.log('Comparing with tx method:')
-  console.log(redBoldFormat.tx('Using tx method'))
-  console.log(redBoldStamper('Using getStamper'))
-  console.log('')
-  console.log('✓ getStamper implementation completed successfully!')
-  
-  break teste_getStamper
+  break exemplo_getStamper
 }
 
 
