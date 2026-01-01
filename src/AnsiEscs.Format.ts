@@ -71,7 +71,7 @@ export class Format {
     return this
   }
 
-  tx(text: string) {
+  #buildParams() {
     const params: AnsiParam[] = []
     if (this.#dc)
       for (const dec of this.#dc)
@@ -80,19 +80,15 @@ export class Format {
       params.push(this.#fg)
     if (this.#bg !== undefined)
       params.push(this.#bg)
-    return raw({ parameters: params }) + text + reset
+    return params
+  }
+
+  tx(text: string) {
+    return raw({ parameters: this.#buildParams() }) + text + reset
   }
 
   getStamper() {
-    const params: AnsiParam[] = []
-    if (this.#dc)
-      for (const dec of this.#dc)
-        params.push(AnsiMaps.decoration[dec])
-    if (this.#fg !== undefined)
-      params.push(this.#fg)
-    if (this.#bg !== undefined)
-      params.push(this.#bg)
-    const prefix = raw({ parameters: params })
+    const prefix = raw({ parameters: this.#buildParams() })
     return (text: string) => prefix + text + reset
   }
 }
