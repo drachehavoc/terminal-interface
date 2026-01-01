@@ -78,12 +78,10 @@ export class TerminalRelativePosition  {
     position: TerminalPosition,
     offsets: { top?: number, left?: number }
   ): TerminalRelativePosition {
-    const topOffset = offsets.top
-    const leftOffset = offsets.left
     return new TerminalRelativePosition({
       position,
-      top: topOffset !== undefined ? (rel) => rel.top + topOffset : undefined,
-      left: leftOffset !== undefined ? (rel) => rel.left + leftOffset : undefined,
+      top: offsets.top !== undefined ? (rel) => rel.top + offsets.top! : undefined,
+      left: offsets.left !== undefined ? (rel) => rel.left + offsets.left! : undefined,
     })
   }
 
