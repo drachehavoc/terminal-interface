@@ -82,4 +82,17 @@ export class Format {
       params.push(this.#bg)
     return raw({ parameters: params }) + text + reset
   }
+
+  getStamper() {
+    const params: AnsiParam[] = []
+    if (this.#dc)
+      for (const dec of this.#dc)
+        params.push(AnsiMaps.decoration[dec])
+    if (this.#fg !== undefined)
+      params.push(this.#fg)
+    if (this.#bg !== undefined)
+      params.push(this.#bg)
+    const prefix = raw({ parameters: params })
+    return (text: string) => prefix + text + reset
+  }
 }

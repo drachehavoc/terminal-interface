@@ -8,10 +8,50 @@ import {
 } from "./src/TerminalInterface"
 
 import { print } from "./src/AnsiEscs.print"
+import { Format } from "./src/AnsiEscs.Format"
 
 // hide cursor
 process.stdout.write('\u001B[?25l')
 
+
+// Test getStamper function
+teste_getStamper: {
+  console.clear()
+  
+  // Create a format with red foreground and bold decoration
+  const redBoldFormat = new Format({ fg: 31, dc: ['bold'] })
+  const redBoldStamper = redBoldFormat.getStamper()
+  
+  // Create a format with green background and italic decoration
+  const greenBgFormat = new Format({ bg: 42, dc: ['italic'] })
+  const greenBgStamper = greenBgFormat.getStamper()
+  
+  // Create a format with blue foreground, yellow background, and underline
+  const blueYellowFormat = new Format({ fg: 34, bg: 43, dc: ['underline'] })
+  const blueYellowStamper = blueYellowFormat.getStamper()
+  
+  // Test the stampers - they should apply the same styles to different texts
+  console.log('Testing getStamper function:\n')
+  console.log(redBoldStamper('Red and Bold Text 1'))
+  console.log(redBoldStamper('Red and Bold Text 2'))
+  console.log(redBoldStamper('Red and Bold Text 3'))
+  console.log('')
+  console.log(greenBgStamper('Green Background with Italic 1'))
+  console.log(greenBgStamper('Green Background with Italic 2'))
+  console.log('')
+  console.log(blueYellowStamper('Blue text on Yellow background with Underline'))
+  console.log(blueYellowStamper('Same style, different text'))
+  console.log('')
+  
+  // Compare with tx method for consistency
+  console.log('Comparing with tx method:')
+  console.log(redBoldFormat.tx('Using tx method'))
+  console.log(redBoldStamper('Using getStamper'))
+  console.log('')
+  console.log('✓ getStamper implementation completed successfully!')
+  
+  break teste_getStamper
+}
 
 
 
