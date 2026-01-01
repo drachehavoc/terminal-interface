@@ -71,7 +71,7 @@ export class Format {
     return this
   }
 
-  tx(text: string) {
+  #buildParams() {
     const params: AnsiParam[] = []
     if (this.#dc)
       for (const dec of this.#dc)
@@ -80,6 +80,15 @@ export class Format {
       params.push(this.#fg)
     if (this.#bg !== undefined)
       params.push(this.#bg)
-    return raw({ parameters: params }) + text + reset
+    return params
+  }
+
+  tx(text: string) {
+    return raw({ parameters: this.#buildParams() }) + text + reset
+  }
+
+  getStamper() {
+    const prefix = raw({ parameters: this.#buildParams() })
+    return (text: string) => prefix + text + reset
   }
 }

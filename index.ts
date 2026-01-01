@@ -8,10 +8,27 @@ import {
 } from "./src/TerminalInterface"
 
 import { print } from "./src/AnsiEscs.print"
+import { Format } from "./src/AnsiEscs.Format"
 
 // hide cursor
 process.stdout.write('\u001B[?25l')
 
+
+// Example: Using getStamper to create reusable style functions
+exemplo_getStamper: {
+  console.clear()
+  
+  // Create reusable stampers for different styles
+  const errorStamper = new Format({ fg: 31, dc: ['bold'] }).getStamper()
+  const successStamper = new Format({ fg: 32, dc: ['bold'] }).getStamper()
+  const warningStamper = new Format({ fg: 33 }).getStamper()
+  
+  console.log(errorStamper('ERROR: Something went wrong!'))
+  console.log(warningStamper('WARNING: Please check this.'))
+  console.log(successStamper('SUCCESS: Operation completed.'))
+  
+  break exemplo_getStamper
+}
 
 
 
