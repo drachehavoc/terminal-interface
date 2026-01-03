@@ -1,15 +1,22 @@
 {
-  "name": "terminal-interface",
+  "name": "terminal-interface-s",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --watch index.ts"
+    "dev:bun": "bun --watch index.ts",
+    "dev:tsx": "tsx --watch index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@xterm/headless": "^6.0.0",
+    "bun-pty": "^0.4.5",
+    "node-pty": "^1.1.0",
+    "tsx": "^4.21.0"
   }
 }

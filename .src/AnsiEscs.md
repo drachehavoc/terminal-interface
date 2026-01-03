@@ -1,11 +1,10 @@
 # AnsiEscs.ts
 
-
 # **AnsiEscs.Format** - *Classe de estilos de texto ANSI*
 
 ```typescript
 
-import { Format as f } from "./AnsiEscs.Format"
+import { Format as f } from "./src/AnsiEscs.Format"
 let line = "Textos coloridos: "
 
 // Exemplo de uso do da classe
@@ -23,4 +22,5 @@ console.log(line)
 ```
 
 ## Resultado:
-> ![AnsiEscs.format example](./AnsiEscs.format.png)
+
+![ANSI Text format GIF example](./AnsiEscs.format.png)

@@ -1,0 +1,141 @@
+// import { Format as f } from "./src/AnsiEscs.Format"
+
+// function numlines() {
+//   const rows = process.stdout.rows
+//   const cols = process.stdout.columns
+//   let z
+
+//   z = 1
+//   for (let i = 1; i <= cols; i++) {
+//     const p = i % 10
+//     process.stdout.write(`\x9B1;${i}H` + (p == 0 ? f.fg("red").tx(`${z++}`) : p) + '\n')
+//   }
+
+//   z = 1
+//   for (let i = 1; i <= rows; i++) {
+//     const p = i % 10
+//     process.stdout.write(`\x9B${i};1H` + (p == 0 ? f.fg("red").tx(`${z++}`) : p))
+//   }
+// }
+
+
+// interface ITerminalCoordinates {
+//   top: number
+//   left: number
+// }
+
+// class ITerminalCoordinates implements ITerminalCoordinates {
+//   constructor(public top: number, public left: number) { }
+// }
+
+// function coord(...args: ConstructorParameters<typeof ITerminalCoordinates>) {
+//   return new ITerminalCoordinates(...args)
+// }
+
+
+// class TerminalCoordinatesResponsive implements ITerminalCoordinates {
+//   #topRatio; #leftRatio
+//   constructor(topRatio: number, leftRatio: number) {
+//     this.#topRatio = topRatio
+//     this.#leftRatio = leftRatio
+//   }
+
+//   get top() {
+//     return Math.max(1, Math.floor(process.stdout.rows * this.#topRatio))
+//   }
+
+//   get left() {
+//     return Math.max(1, Math.floor(process.stdout.columns * this.#leftRatio))
+//   }
+// }
+
+// function respCoord(...args: ConstructorParameters<typeof TerminalCoordinatesResponsive>) {
+//   return new TerminalCoordinatesResponsive(...args)
+// }
+
+
+// class TerminalSquare {
+//   #topLeft; #bottomRight
+//   constructor(
+//     topLeft: ITerminalCoordinates, 
+//     bottomRight: ITerminalCoordinates
+//   ) { 
+//     this.#topLeft = topLeft
+//     this.#bottomRight = bottomRight
+//   }
+
+//   get top() {
+//     return this.#topLeft.top
+//   }
+
+//   get left() {
+//     return this.#topLeft.left
+//   }
+
+//   get right() {
+//     return this.#bottomRight.left
+//   }
+
+//   get bottom() {
+//     return this.#bottomRight.top
+//   }
+
+//   get width() {
+//     return this.right - this.left + 1
+//   }
+
+//   get height() {
+//     return this.bottom - this.top + 1
+//   }
+// }
+
+
+
+// function drawx(coord: ITerminalCoordinates) {
+//   process.stdout.write(
+//     `\x9B${coord.top};${coord.left}H` + f.fg("brightRed").tx("X")
+//   )
+// }
+
+// function drawSquare(square: TerminalSquare) {
+//   const top = square.top
+//   const left = square.left
+//   const right = square.right
+//   const bottom = square.bottom
+//   // drawx(coord(top, left))
+//   // drawx(coord(top, right))
+//   // drawx(coord(bottom, left))
+//   // drawx(coord(bottom, right))
+
+//   const clearLine = f.fg("brightBlue").tx("─".repeat(square.width))
+  
+//   for (let t = top; t <= bottom; t++) {
+    
+//   }
+
+// }
+
+
+
+// block_draw: {
+//   // const c1 = respCoord(.25, .25)
+//   const c2 = respCoord(.50, .50)
+//   // const c3 = respCoord(.75, .75)
+
+//   const c1 = coord(5, 10)
+//   // const c2 = coord(10, 30)
+  
+//   const s1 = new TerminalSquare(c1, c2)
+
+
+//   const draw = () => {
+//     process.stdout.write('\x1Bc') // clear screen
+//     drawx(c1)
+//     drawx(c2)
+//     drawSquare(s1)
+
+//     numlines()
+//   }
+//   process.stdout.on('resize', draw)
+//   draw()
+// }

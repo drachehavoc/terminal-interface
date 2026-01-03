@@ -2,7 +2,7 @@ import { starters } from "./AnsiEscs.consts"
 import { keepArrayEmptySpacesRemoveUndeined } from "./AnsiEscs.helpres"
 import type { AnsiParams, Starters } from "./AnsiEscs.types"
 
-export function raw (args: {
+export function seq (args: {
   sequenceType?: Starters,
   parameters?: AnsiParams,
   parametersJoiner?: ";" | ":" | "/",
@@ -20,6 +20,16 @@ export function raw (args: {
     + command
 }
 
-export const reset = raw({ command: "m" })
+export function print(position: TerminalPosition, text: string) {
+  return process.stdout.write(
+    seq({
+      sequenceType: "CSI",
+      parameters: [position.top, position.left],
+      command: "H",
+    }) + text
+  )
+}
 
-export const m = (...params: AnsiParams) => raw({ parameters: params, command: "m" })
+export const reset = seq({ command: "m" })
+
+export const m = (...params: AnsiParams) => seq({ parameters: params, command: "m" })

@@ -1,22 +1,28 @@
-import { raw } from "./AnsiEscs.raw"
-import { AnsiMaps } from "./AnsiEscs.consts"
+import { seq } from "./AnsiEscs.raw"
+import { AnsiMaps, Bg, Fg } from "./AnsiEscs.consts"
 import { reset } from "./AnsiEscs.raw"
-import type { AnsiParam, Background, Decorations, Foreground } from "./AnsiEscs.types"
+import type { AnsiParam, Background, ColorNames, Decorations, Foreground } from "./AnsiEscs.types"
 
 /**
  * Classe com validações para os parâmetros de texto ANSI.
  */
 class Validations {
-  static fg(value?: Foreground) {
+  static fg(value?: Foreground | ColorNames) {
     if (value === undefined) return value
-    if (!AnsiMaps.foreground.includes(value))
+    if (Fg.hasOwnProperty(value)) {
+      return Fg[value as ColorNames]
+    }
+    if (!AnsiMaps.foreground.includes(value as Foreground))
       throw new Error(`Invalid foreground color code: ${value}`)
     return value
   }
 
-  static bg(value?: Background) {
+  static bg(value?: Background | ColorNames) {
     if (value === undefined) return value
-    if (!AnsiMaps.background.includes(value))
+    if (Bg.hasOwnProperty(value)) {
+      return Bg[value as ColorNames]
+    }
+    if (!AnsiMaps.background.includes(value as Background))
       throw new Error(`Invalid background color code: ${value}`)
     return value
   }
@@ -30,6 +36,7 @@ class Validations {
   }
 }
 
+
 /**
  * Classe para estilização de texto com códigos ANSI.
  */
@@ -39,8 +46,8 @@ export class Format {
   #dc
 
   constructor(args: {
-    fg?: Foreground,
-    bg?: Background,
+    fg?: Foreground | ColorNames,
+    bg?: Background | ColorNames,
     dc?: Decorations[]
   }) {
     this.#fg = Validations.fg(args.fg ?? undefined)
@@ -48,20 +55,20 @@ export class Format {
     this.#dc = Validations.decoration(...(args.dc ?? []))
   }
 
-  static fg(value?: Foreground) {
+  static fg(value?: Foreground | ColorNames) {
     return new this({ fg: Validations.fg(value) })
   }
 
-  static bg(value?: Background) {
+  static bg(value?: Background | ColorNames) {
     return new this({ bg: Validations.bg(value) })
   }
 
-  fg(value?: Foreground) {
+  fg(value?: Foreground | ColorNames) {
     this.#fg = Validations.fg(value)
     return this
   }
 
-  bg(value?: Background) {
+  bg(value?: Background | ColorNames) {
     this.#bg = Validations.bg(value)
     return this
   }
@@ -80,6 +87,6 @@ export class Format {
       params.push(this.#fg)
     if (this.#bg !== undefined)
       params.push(this.#bg)
-    return raw({ parameters: params }) + text + reset
+    return seq({ parameters: params }) + text + reset
   }
 }
