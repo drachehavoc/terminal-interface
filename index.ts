@@ -3,14 +3,14 @@ import * as tm from './src/TerminalMath.js'
 
 const cage1 = new SpawnCage({
   command: 'nano',
-  args: ['/tmp/teste.txt'],
-  square: tm.square(tm.coord.fixed(1, 1), tm.coord.responsive(.5, .35)),
+  args   : ['/tmp/teste.txt'],
+  square : tm.square(tm.coord.fixed(1, 1), tm.coord.responsive(.5, .35)),
 })
 
 const cage2 = new SpawnCage({
   command: 'nano',
-  args: ['/tmp/teste2.txt'],
-  square: tm.square(tm.coord.fixed(1, 44), tm.coord.responsive(.8, .85)),
+  args   : ['/tmp/teste2.txt'],
+  square : tm.square(tm.coord.fixed(1, 44), tm.coord.responsive(.8, .85)),
 })
 
 
