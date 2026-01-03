@@ -7,6 +7,10 @@ export interface TTermSquare {
   right: number
   height: number
   width: number
+  topLeft: TCoordinate
+  topRight: TCoordinate
+  bottomRight: TCoordinate
+  bottomLeft: TCoordinate
 }
 
 export type TCoordinate = {
@@ -49,6 +53,23 @@ export class TermResponsiveCoord implements TCoordinate {
   }
 }
 
+export class TermSumCoord implements TCoordinate {
+  #coords
+  constructor(
+    ...coords: TCoordinate[]  
+  ) { 
+    this.#coords = coords
+  }
+
+  get row(): number {
+    return this.#coords.reduce((sum, coord) => sum + coord.row, 0)
+  }
+
+  get col(): number {
+    return this.#coords.reduce((sum, coord) => sum + coord.col, 0)
+  }
+}
+
 export class TermSize implements TSize {
   constructor(
     public height: number,
@@ -56,11 +77,30 @@ export class TermSize implements TSize {
   ) { }
 }
 
-export class TermSquareBySize {
+export class TermSquareBySize implements TTermSquare {
+  #topLeft
+  #topRight
+  #bottomLeft
+  #bottomRight
+  
   constructor(
-    public topLeft: TermFixedCoord,
+    topLeft: TermFixedCoord,
     public size: TermSize
-  ) { }
+  ) { 
+    this.#topLeft = topLeft
+    this.#topRight = {
+      get row() { return topLeft.row },
+      get col() { return topLeft.col + size.width - 1 },
+    }
+    this.#bottomLeft = {
+      get row() { return topLeft.row + size.height - 1 },
+      get col() { return topLeft.col },
+    }
+    this.#bottomRight = {
+      get row() { return topLeft.row + size.height - 1 },
+      get col() { return topLeft.col + size.width - 1 },
+    }
+  }
 
   get top() {
     return this.topLeft.row
@@ -85,36 +125,84 @@ export class TermSquareBySize {
   get width() {
     return this.size.width
   }
+
+  get topLeft() {
+    return this.#topLeft
+  }
+
+  get topRight() {
+    return this.#topRight
+  }
+
+  get bottomRight() {
+    return this.#bottomRight
+  }
+
+  get bottomLeft() {
+    return this.#bottomLeft
+  }
 }
 
-export class TermSquareByCorners {
+export class TermSquareByCorners implements TTermSquare {
+  #topLeft
+  #topRight
+  #bottomLeft
+  #bottomRight
+
   constructor(
-    public topLeft: TermFixedCoord,
-    public bottomRight: TermFixedCoord
-  ) { }
+    topLeft: TermFixedCoord,
+    bottomRight: TermFixedCoord
+  ) {
+    this.#topLeft = topLeft
+    this.#topRight = {
+      get row() { return topLeft.row },
+      get col() { return bottomRight.col },
+    }
+    this.#bottomLeft = {
+      get row() { return bottomRight.row },
+      get col() { return topLeft.col },
+    }
+    this.#bottomRight = bottomRight
+  }
 
   get top() {
-    return this.topLeft.row
+    return this.#topLeft.row
   }
 
   get left() {
-    return this.topLeft.col
+    return this.#topLeft.col
   }
 
   get bottom() {
-    return this.bottomRight.row
+    return this.#bottomRight.row
   }
 
   get right() {
-    return this.bottomRight.col
+    return this.#bottomRight.col
   }
 
   get height() {
-    return this.bottomRight.row - this.topLeft.row + 1
+    return this.#bottomRight.row - this.#topLeft.row + 1
   }
 
   get width() {
-    return this.bottomRight.col - this.topLeft.col + 1
+    return this.#bottomRight.col - this.#topLeft.col + 1
+  }
+
+  get topLeft() {
+    return this.#topLeft
+  }
+
+  get topRight() {
+    return this.#topRight
+  }
+
+  get bottomRight() {
+    return this.#bottomRight
+  }
+
+  get bottomLeft() {
+    return this.#bottomLeft
   }
 }
 
@@ -143,7 +231,10 @@ export const coord = {
     new TermFixedCoord(...args),
 
   responsive: (...args: ConstructorParameters<typeof TermResponsiveCoord>) =>
-    new TermResponsiveCoord(...args)
+    new TermResponsiveCoord(...args),
+
+  sum: (...args: ConstructorParameters<typeof TermSumCoord>) =>
+    new TermSumCoord(...args),
 }
 
 export function size(height: number, width: number) {

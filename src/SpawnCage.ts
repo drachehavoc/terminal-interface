@@ -33,8 +33,8 @@ const pty = await ({
   },
   
   deno: async () => {
+    // return await import('node-pty')
     return await import('@lydell/node-pty')
-    return await import('node-pty')
   },
   
   node: async () => {
@@ -79,11 +79,8 @@ export class SpawnCage {
       name: this.#name,
       cols: this.#square.width,
       rows: this.#square.height,
-      cwd: process.cwd(),
-      env: {
-        ...process.env,
-        TERM: 'xterm-256color'
-      }
+      cwd : process.cwd(),
+      env : { ...process.env, TERM: 'xterm-256color' }
     });
     return proc
   }
@@ -93,26 +90,24 @@ export class SpawnCage {
       allowProposedApi: true,
       cols: this.#square.width,
       rows: this.#square.height,
-    });
+    })
     return term
   }
 
   #setEventHandlers(proc: PtyProc, term: XTerm) {
-
-
     // Input do teclado -> App externo
-    process.stdin.on('data', (data) => proc.write(data));
+    process.stdin.on('data', (data) => proc.write(data as string))
 
     // Output do App externo -> Buffer virtual -> Render
     proc.onData((data) => {
-      term.write(data, this.render.bind(this));
-    });
+      term.write(data, this.render.bind(this))
+    })
 
     // Limpeza ao sair
     proc.onExit(() => {
-      process.stdout.write('\x1b[2J\x1b[H');
-      process.exit();
-    });
+      process.stdout.write('\x1b[2J\x1b[H')
+      process.exit()
+    })
   }
 
   resize() {
@@ -128,33 +123,31 @@ export class SpawnCage {
     let output = ''
 
     // Renderiza cada linha do buffer do xterm-headless
-    let currentStyle = ''
     for (let y = 0; y < height; y++) {
       const line = buffer.getLine(y)
       output += `\x1b[${top + y};${left}H`; // Pula para a posição X, Y
-
+      
       if (!line) {
         output += clearLine
         continue
       }
-
-      let style = ''
-
+      
+      let currentStyle = ''    
       for (let x = 0; x < width; x++) {
-        const cell = line.getCell(x);
+        const cell = line.getCell(x)
         if (!cell) {
           output += ' '
           continue;
         }
 
         // Extrai Atributos de Estilo da Célula
-        const bold = cell.isBold() ? ';1' : ''
-        const dim = cell.isDim() ? ';2' : ''
-        const italic = cell.isItalic() ? ';3' : ''
+        const bold      = cell.isBold()      ? ';1' : ''
+        const dim       = cell.isDim()       ? ';2' : ''
+        const italic    = cell.isItalic()    ? ';3' : ''
         const underline = cell.isUnderline() ? ';4' : ''
-        const inverse = cell.isInverse() ? ';7' : ''
-        const blink = cell.isBlink() ? ';5' : ''
-        style += `\x1b[0${bold}${dim}${italic}${underline}${inverse}${blink}`
+        const inverse   = cell.isInverse()   ? ';7' : ''
+        const blink     = cell.isBlink()     ? ';5' : ''
+        let   style     = `\x1b[0${bold}${dim}${italic}${underline}${inverse}${blink}`
 
         // Pega as cores do texto da célula
         if (cell.isFgPalette()) {
@@ -194,5 +187,9 @@ export class SpawnCage {
 
     // Renderiza tudo de uma vez
     process.stdout.write(output)
+  }
+
+  get square() {
+    return this.#square
   }
 }
