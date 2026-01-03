@@ -10,18 +10,18 @@ import * as tm from './src/TerminalMath.js'
 
 const cage1 = new SpawnCage({
   command: 'vi',
-  args   : ['/tmp/teste.txt'],
-  square : tm.square(
-    tm.coord.fixed(1, 1), 
+  args: ['/tmp/teste.txt'],
+  square: tm.square(
+    tm.coord.fixed(1, 1),
     tm.coord.responsive(1, .35)
   ),
 })
 
 const cage2 = new SpawnCage({
   command: 'vi',
-  args   : ['/tmp/teste2.txt'],
-  square : tm.square(
-    tm.coord.sum(tm.coord.fixed(0, 4), cage1.square.topRight), 
+  args: ['/tmp/teste2.txt'],
+  square: tm.square(
+    tm.coord.sum(tm.coord.fixed(0, 4), cage1.square.topRight),
     tm.coord.responsive(1, 1)
   ),
 })
