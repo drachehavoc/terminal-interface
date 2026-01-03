@@ -33,6 +33,7 @@ const pty = await ({
   },
   
   deno: async () => {
+    return await import('@lydell/node-pty')
     return await import('node-pty')
   },
   
@@ -97,8 +98,7 @@ export class SpawnCage {
   }
 
   #setEventHandlers(proc: PtyProc, term: XTerm) {
-    process.stdin.setRawMode(true);
-    process.stdin.resume();
+
 
     // Input do teclado -> App externo
     process.stdin.on('data', (data) => proc.write(data));

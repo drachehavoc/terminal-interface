@@ -1,3 +1,10 @@
+process.stdin.setRawMode(true)
+process.stdin.resume()
+process.stdin.setEncoding('utf8')
+
+// hide cursor
+process.stdout.write('\x1B[?25l')
+
 import { SpawnCage } from './src/SpawnCage.js'
 import * as tm from './src/TerminalMath.js'
 

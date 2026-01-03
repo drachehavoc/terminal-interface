@@ -9,15 +9,16 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "tsx": "^4.21.0",
-    "node-pty": "^1.1.0"
+    "node-pty": "^1.1.0",
+    "tsx": "^4.21.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "@lydell/node-pty": "^1.1.0",
     "@xterm/headless": "^6.0.0",
-    "node-gyp": "^12.1.0",
-    "bun-pty": "^0.4.5"
+    "bun-pty": "^0.4.5",
+    "node-gyp": "^12.1.0"
   }
 }
