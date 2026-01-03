@@ -28,7 +28,7 @@ import { __runtimename } from './helper.runtime'
 // --- CONDITIONAL IMPORT OF node-pty BASED ON RUNTIME ---
 const pty = await ({
   bun: async () => {
-    const { spawn } = await import('node-pty')
+    const { spawn } = await import('bun-pty')
     return { spawn }
   },
   
