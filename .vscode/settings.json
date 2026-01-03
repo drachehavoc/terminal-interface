@@ -23,7 +23,7 @@
         "**/dist"         : true,
         "**/package.json" : true,
         "**/tsconfig.json": true,
-        // "**/.*"           : true,
+        "**/.*"           : true,
         "**/*.lock"       : true,
         "**/.gitignore"   : true,
         "**/.git"         : true,

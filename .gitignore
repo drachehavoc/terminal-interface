@@ -1,3 +1,11 @@
+# MINHAS LOCURA - NÃO FAÇA IGUAL
+.package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.bun.lockb
+bun.lock
+
+
 # dependencies (bun install)
 node_modules
 
