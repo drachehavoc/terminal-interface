@@ -20,17 +20,17 @@
 
     "files.exclude": {
         "**/node_modules" : true,
-        "**/dist"         : true,
-        "**/package.json" : true,
-        "**/tsconfig.json": true,
-        "**/.*"           : true,
-        "**/*.lock"       : true,
-        "**/.gitignore"   : true,
-        "**/.git"         : true,
-        "**/.svn"         : true,
-        "**/.hg"          : true,
-        "**/.DS_Store"    : true,
-        "**/Thumbs.db"    : true
+        // "**/dist"         : true,
+        // "**/package.json" : true,
+        // "**/tsconfig.json": true,
+        // "**/.*"           : true,
+        // "**/*.lock"       : true,
+        // "**/.gitignore"   : true,
+        // "**/.git"         : true,
+        // "**/.svn"         : true,
+        // "**/.hg"          : true,
+        // "**/.DS_Store"    : true,
+        // "**/Thumbs.db"    : true
     },
 
     // --- File Nesting Settings ---------------------------------------------------------------------------------------

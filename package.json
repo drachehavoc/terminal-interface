@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev:bun": "bun --watch index.ts",
-    "dev:tsx": "tsx --watch index.ts"
+    "dev-bun": "bun --watch index.ts",
+    "dev-tsx": "tsx --watch index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

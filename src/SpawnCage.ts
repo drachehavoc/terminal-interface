@@ -29,6 +29,11 @@ import { __runtimename } from './helper.runtime'
 const pty = await ({
   bun: async () => {
     const { spawn } = await import('bun-pty')
+
+
+
+    console.log(spawn)
+    
     return { spawn }
   },
   
