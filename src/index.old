@@ -1,12 +1,58 @@
-process.stdin.setRawMode(true)
-process.stdin.resume()
-process.stdin.setEncoding('utf8')
-process.stdout.write('\x1B[?25l')
+console.log(Date.now())
 
-import { SpawnCage } from './src/SpawnCage.js'
-import * as tm from './src/TerminalMath.js'
 
-SpawnCage
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function render() {
+  console.clear()  
+}
+
+process.stdout.on('resize', () => {
+  render()
+})
+
+process.on('exit', () => {
+  // show cursor again
+  process.stdout.write('\x1B[?25h')
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// process.stdin.setRawMode(true)
+// process.stdin.resume()
+// process.stdin.setEncoding('utf8')
+// process.stdout.write('\x1B[?25l')
+
+
+
+// import { SpawnCage } from './SpawnCage'
+// import * as tm from './TerminalMath'
 
 // const cage1 = new SpawnCage({
 //   command: 'vi',

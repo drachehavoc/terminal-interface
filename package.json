@@ -1,24 +1,10 @@
 {
   "name": "terminal-interface-s",
-  "module": "index.ts",
   "type": "module",
   "private": true,
   "scripts": {
     "dev-bun": "bun --watch index.ts",
-    "dev-tsx": "tsx --watch index.ts"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "node-pty": "^1.1.0",
-    "tsx": "^4.21.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "@lydell/node-pty": "^1.1.0",
-    "@xterm/headless": "^6.0.0",
-    "bun-pty": "^0.4.5",
-    "node-gyp": "^12.1.0"
+    "dev-tsx": "tsx --watch index.ts",
+    "dev-deno": "deno -A --watch index.ts"
   }
 }

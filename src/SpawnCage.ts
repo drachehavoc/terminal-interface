@@ -18,42 +18,47 @@
 // ██████░░░░░░░░░░░░░▄█▀░░▄███████████████
 // ███████▄▄░░░░░░░░░▀░░░▄▀▄███████████████
 
-// --- EXTERNAL IMPORTS ---
+
 import xheadless from '@xterm/headless'
+import { byRuntime } from '../core.runtime';
+import type { Square } from './LazyLayoutMath';
 
-// --- MY IMPORTS ---
-import type { TTermSquare } from './TerminalMath';
-import { __runtimename } from './helper.runtime'
+type IEvent<T> = {
+  (listener: (e: T) => any): any
+}
 
-// --- CONDITIONAL IMPORT OF node-pty BASED ON RUNTIME ---
-const pty = await ({
-  bun: async () => {
-    const { spawn } = await import('bun-pty')
+type PtyProc = {
+  readonly pid: number
+  readonly cols: number
+  readonly rows: number
+  readonly process: string
+  handleFlowControl: boolean
+  readonly onData: IEvent<string>
+  readonly onExit: IEvent<{ exitCode: number, signal?: number }>
+  resize(columns: number, rows: number): void
+  clear(): void
+  write(data: string): void
+  kill(signal?: string): void
+  pause(): void
+  resume(): void
+}
 
-
-
-    console.log(spawn)
-    
-    return { spawn }
-  },
-  
-  deno: async () => {
-    // return await import('node-pty')
-    return await import('@lydell/node-pty')
-  },
-  
-  node: async () => {
-    return await import('node-pty')
-  },
-  
-  unknown: async () => {
-    throw new Error('Unsupported runtime')
-  }
-})[__runtimename]();
-
-// --- TYPE ALIASES ---
-type PtyProc = ReturnType<typeof pty.spawn>
 type XTerm = xheadless.Terminal
+
+
+// --- CONDITIONAL IMPORT/INSTALL OF PTY BASED ON RUNTIME ---
+
+const pty = await byRuntime()
+  // @ts-ignore
+  .node(async () => await import('@lydell/node-pty'))
+  // @ts-ignore
+  .deno(async () => await import('@lydell/node-pty'))
+  // @ts-ignore
+  .bun (async () => await import('bun-pty'))
+  .run() as unknown as {
+    spawn: (file: string, args?: string[], options?: any) => PtyProc
+  }
+
 
 // --- CLASS DEFINITION ---
 export class SpawnCage {
@@ -65,7 +70,7 @@ export class SpawnCage {
   #term
 
   constructor(parameters: {
-    square: TTermSquare,
+    square: Square,
     command: string,
     args?: string[],
     name?: string,
@@ -100,19 +105,17 @@ export class SpawnCage {
   }
 
   #setEventHandlers(proc: PtyProc, term: XTerm) {
-    // Input do teclado -> App externo
-    process.stdin.on('data', (data) => proc.write(data as string))
-
     // Output do App externo -> Buffer virtual -> Render
     proc.onData((data) => {
       term.write(data, this.render.bind(this))
     })
 
     // Limpeza ao sair
-    proc.onExit(() => {
-      process.stdout.write('\x1b[2J\x1b[H')
-      process.exit()
-    })
+    proc.onExit(() => {})
+  }
+
+  write(data: string) {
+    this.#proc.write(data)
   }
 
   resize() {
