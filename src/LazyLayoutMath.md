@@ -15,7 +15,7 @@ A biblioteca é especialmente útil em cenários onde o layout precisa se adapta
 
 > ⚠ **Nota:** Todos os exemplos abaixo usam a classe `Terminal` para demonstrar o uso prático dos conceitos, mas a biblioteca `LazyLayoutMath` é independente e pode ser usada em qualquer contexto que requeira cálculos numéricos dinâmicos.
 
-> ⚠ **Nota:** Os exemplos demonstram o uso direto das classes. No entanto o projeto conta com uma série de de funções auxiliares para facilitar a criação de instâncias, como `percent`, `coordinate`, `square`, Leia mais na seção ["Funções Auxiliares"][helper-functions] abaixo.
+> ⚠ **Nota:** Os exemplos demonstram o uso direto das classes. No entanto o projeto conta com uma série de de funções auxiliares para facilitar a criação de instâncias, como `percent`, `coordinate`, `square`, Leia mais na seção ["Funções Auxiliares"][helper-functions-link] abaixo.
 
 [helper-functions-link]: #helper-functions
 
