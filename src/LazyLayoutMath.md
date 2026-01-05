@@ -178,7 +178,7 @@ render()
 ```
 
 ## Funções Auxiliares
-<a name="helper-functions"></a>
+<span id="helper-functions" />
 
 ## Filosofia da Biblioteca
 
