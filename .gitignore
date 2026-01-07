@@ -1,9 +1,18 @@
+#
 # MINHAS LOCURA - NÃO FAÇA IGUAL
-.package-lock.json
-yarn.lock
-pnpm-lock.yaml
+#
+
 .bun.lockb
+package-lock.json
+yarn.lock
+deno.lock
+pnpm-lock.yaml
 bun.lock
+*.save
+*.swp
+*.swo
+*.tmp
+*.log
 
 
 # dependencies (bun install)

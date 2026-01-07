@@ -1,7 +1,9 @@
 import readline from "node:readline"
 import { byRuntime } from "../core.runtime"
+import { logger } from "./Debugger"
 
 const ResizeCallbacks: (() => void)[] = []
+const CleanupCallbacks: (() => void)[] = [] = []
 
 readline.emitKeypressEvents(process.stdin)
 
@@ -56,11 +58,16 @@ export class TermReal {
   }
 
   static hideCursor() {
+    CleanupCallbacks.includes(this.showCursor) 
+      || CleanupCallbacks.push(this.showCursor)
     process.stdout.write('\x1b[?25l')
     return this
   }
 
   static showCursor() {
+    CleanupCallbacks.includes(this.showCursor) 
+      && CleanupCallbacks.splice(CleanupCallbacks.indexOf(this.showCursor), 1)
+    logger.log('Showing cursor on cleanup')
     process.stdout.write('\x1b[?25h')
     return this
   }

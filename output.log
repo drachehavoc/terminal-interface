@@ -1,0 +1,50 @@
+[32m'Key pressed:'[39m {
+  data: [32m'\x16'[39m,
+  key: {
+    sequence: [32m'\x16'[39m,
+    name: [32m'v'[39m,
+    ctrl: [33mtrue[39m,
+    meta: [33mfalse[39m,
+    shift: [33mfalse[39m
+  }
+} 
+[32m'Key pressed:'[39m {
+  data: [32m'\x03'[39m,
+  key: {
+    sequence: [32m'\x03'[39m,
+    name: [32m'c'[39m,
+    ctrl: [33mtrue[39m,
+    meta: [33mfalse[39m,
+    shift: [33mfalse[39m
+  }
+} 
+[32m'Key pressed:'[39m {
+  data: [32m'\x03'[39m,
+  key: {
+    sequence: [32m'\x03'[39m,
+    name: [32m'c'[39m,
+    ctrl: [33mtrue[39m,
+    meta: [33mfalse[39m,
+    shift: [33mfalse[39m
+  }
+} 
+[32m'Key pressed:'[39m {
+  data: [32m'\x03'[39m,
+  key: {
+    sequence: [32m'\x03'[39m,
+    name: [32m'c'[39m,
+    ctrl: [33mtrue[39m,
+    meta: [33mfalse[39m,
+    shift: [33mfalse[39m
+  }
+} 
+[32m'Key pressed:'[39m {
+  data: [32m'\x03'[39m,
+  key: {
+    sequence: [32m'\x03'[39m,
+    name: [32m'c'[39m,
+    ctrl: [33mtrue[39m,
+    meta: [33mfalse[39m,
+    shift: [33mfalse[39m
+  }
+} 
