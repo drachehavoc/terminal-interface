@@ -1,0 +1,306 @@
+import xterm from '@xterm/headless'
+import type { TFutureNumber, TStrictFutureNumber } from './@types'
+import { logger } from './Debugger'
+import { future, getResultOfFutureNumber } from './FutureMath'
+import { TermReal } from './Term.Real'
+import { TermString } from './Term.String'
+
+type DivisionRelative = { relative: number }
+type DivisionAbsolute = { absolute: number }
+type DivisionType = DivisionRelative | DivisionAbsolute
+type TStrictFutureNumberWithType = TStrictFutureNumber & {
+  type: 'absolute' | 'relative',
+  left: TStrictFutureNumberWithType,
+  calc: TStrictFutureNumber,
+}
+
+
+
+
+function getFutureNumberFromRelativeDivision(
+  anchor: TStrictFutureNumberWithType,
+  relative: DivisionRelative,
+  freeSpace: () => number,
+): TStrictFutureNumberWithType {
+  return {
+    type: 'relative',
+    left: anchor,
+    calc: future.percent({
+      part: relative.relative,
+      whole: freeSpace,
+      rounding: (v, {}) => Math.max(1, Math.floor(v)),
+    }),
+    get value() {
+      return this.left.value + this.calc.value
+    }
+  }
+}
+
+function getFutureNumberFromAbsoluteDivision(
+  anchor: TStrictFutureNumberWithType,
+  absolute: DivisionAbsolute,
+): TStrictFutureNumberWithType {
+  return {
+    type: 'absolute',
+    left: anchor,
+    calc: future.number(absolute.absolute),
+    get value() {
+      return this.left.value + this.calc.value
+    }
+  }
+}
+
+function getFutureNumberFromAnyDivision(
+  anchor: TStrictFutureNumberWithType,
+  division: DivisionType,
+  freeSpace: () => number,
+):TStrictFutureNumberWithType {
+  if ('absolute' in division)
+    return getFutureNumberFromAbsoluteDivision(anchor, division)
+  if ('relative' in division)
+    return getFutureNumberFromRelativeDivision(anchor, division, freeSpace)
+  throw new Error('Invalid division type')
+}
+
+function createDivisions(
+  args: { totalAbsolute: () => number },
+  ...divisions: DivisionType[]
+) {
+  const getTotalAbsolute = args.totalAbsolute
+
+  const getAbsoluteUsedSpace = () => divisions.reduce((sum, div) => {
+    if ('absolute' in div) return sum + div.absolute
+    return sum
+  }, 0)
+
+  const getRelativePercentUsedSpace = () => divisions.reduce((sum, div) => {
+    if ('relative' in div) return sum + div.relative
+    return sum
+  }, 0)
+
+  const getFreeRelativeSpace = () => {
+    return getTotalAbsolute() - getAbsoluteUsedSpace()
+  }
+
+  if (getRelativePercentUsedSpace() > 1)
+    throw new Error('Total relative divisions cannot exceed 1 (100%)')
+  
+  let last: TStrictFutureNumberWithType = { 
+    value: 1, 
+    type: 'absolute', 
+    left: null as any, 
+    calc: future.number(0) 
+  }
+
+  const results: TStrictFutureNumberWithType[] = [last]
+
+  for (const division of divisions) {
+    last = getFutureNumberFromAnyDivision(last, division, getFreeRelativeSpace)
+    results.push(last)
+  }
+
+  return {
+    iterate: function* () {
+      for (const result of results)
+        yield result
+    },
+    
+    get (index: number) {
+      return results[index]
+    },
+    
+    remove(index: number) {
+      const l = results[index - 1]
+      const r = results[index + 1]
+      if (l && r) r.left = l
+      results.splice(index, 1)
+    },
+
+    add(index: number, division: DivisionType) {
+      const l = results[index - 1]!
+      const newDiv = getFutureNumberFromAnyDivision(l, division, getFreeRelativeSpace)
+      const r = results[index]
+      if (r) r.left = newDiv
+      results.splice(index, 0, newDiv)
+    }
+  }
+}
+
+const test = new xterm.Terminal({ allowProposedApi: true })
+function drawSelectedArea(value: {
+  termString: TermString
+  top: TFutureNumber
+  left: TFutureNumber
+  right: TFutureNumber
+  bottom: TFutureNumber
+}) {
+  const { termString: str, top, left, right, bottom } = value
+  const { promise, resolve, reject } = Promise.withResolvers<TermString>()
+  const _top = getResultOfFutureNumber(top) + 1
+  const _right = getResultOfFutureNumber(right) - 1
+  const _left = getResultOfFutureNumber(left) + 1
+  const _bottom = getResultOfFutureNumber(bottom)-1
+  const selectedArea = new TermString()
+  test.resize(TermReal.width, TermReal.height)
+  test.clear()
+  test.write(str.toString(), () => {
+    const buff = test.buffer.active
+    for (let x = _left; x < _right; x++) {
+      for (let y = _top; y < _bottom; y++) {
+        const line = buff.getLine(y - 1)
+        const cell = line?.getCell(x - 1)
+        if (!line) continue
+        if (!cell) continue
+        const chars = cell.getChars()
+        const color = `\x1b[30;41m`
+        const inverse = cell.isInverse() ? `\x1b[7m` : ''
+        const text = chars == '' ? ' ' : chars
+        selectedArea.moveCursorTo({ x, y }).write(`${color}${inverse}${text}\x1b[0m`)
+      }
+    }
+    resolve(selectedArea)
+  })
+  return promise
+}
+
+
+
+
+
+const xDivisions = createDivisions(
+  { totalAbsolute: () => TermReal.width },
+  { absolute: 15 },
+  { absolute: 20 },
+  { relative: 0.5 },
+  { relative: 0.50 },
+  { absolute: 20 },
+)
+
+const yDivisions = createDivisions(
+  { totalAbsolute: () => TermReal.height },
+  { absolute: 10 },
+  { relative: .5 },
+  { relative: .5 },
+)
+
+// setTimeout(() => {
+//   xDivisions.remove(4)
+//   xDivisions.add(4, { absolute: 10 })
+//   render()
+// }, 2000)
+
+
+
+const squares = [
+  {
+    top: yDivisions.get(0)!,
+    left: xDivisions.get(2)!,
+    bottom: yDivisions.get(1)!,
+    right: xDivisions.get(3)!,
+  },
+  {
+    top: yDivisions.get(0)!,
+    left: xDivisions.get(0)!,
+    bottom: yDivisions.get(1)!,
+    right: xDivisions.get(2)!,
+  },{
+    top: yDivisions.get(0)!,
+    left: xDivisions.get(3)!,
+    bottom: yDivisions.get(1)!,
+    right: xDivisions.get(4)!,
+  },
+]
+
+
+async function render() {
+  let str = new TermString()
+  TermReal.write(str.toString())
+
+  draw_grid: {
+    const xDivs = [...xDivisions.iterate()]
+    const yDivs = [...yDivisions.iterate()]
+
+    const title = (type: string, value:number, index: number) => {
+      const _type = type === 'absolute' ? 'Abs' : 'Rel'
+      return `\x1b[7m ${_type}:${index}:${value} \x1b[0m`
+    }
+
+    for (const [xId, { value: x, type: xType }] of xDivs.entries()) {
+      for (const [yId, { value: y, type: yType }] of yDivs.entries()) {
+        const pos = { x, y }
+        
+        // Top-Left and first vertical and horizontal lines
+        if (xId===0 && yId===0) {
+          str
+            .moveCursorTo(pos).lineRight({ times: TermReal.width })
+            .moveCursorTo(pos).lineDown({ times: TermReal.height })
+            .moveCursorTo(pos).write('┌')
+          continue
+        }
+
+        // Vertical Titles & Lines
+        if (yId === 0 && xId > 0) {
+          str
+          .moveCursorTo(pos).lineDown({ times: TermReal.height })
+          .moveCursorTo(pos).writeLeft(title(xType, x, xId))
+          continue
+        }
+        
+        // Horizontal Titles & Lines
+        if (xId === 0 && yId > 0) {
+          str
+          .moveCursorTo(pos).lineRight({ times: TermReal.width })
+          .moveCursorTo(pos).write(title(yType, y, yId))
+          continue
+        }
+
+        // Right Joints
+        if (xId === xDivs.length -1 && yId < yDivs.length - 1) {
+          str.moveCursorTo(pos).write('┤')
+          continue
+        }
+        
+        // Left Joints
+        if (yId === yDivs.length -1 && xId < xDivs.length - 1) {
+          str.moveCursorTo(pos).write('┴')
+          continue
+        }
+        
+        // Bottom-Right Corner
+        if (yId === yDivs.length -1 && xId == xDivs.length - 1) {
+          str.moveCursorTo(pos).write('┘')
+          continue
+        }
+        
+        // Middle Joints
+        str.moveCursorTo(pos).write('┼')
+      }
+    }
+  }
+
+  draw_terminal_size: {
+    const x = 4
+    const y = 3
+    str
+      .moveCursorTo({ x, y })
+      .write(`${TermReal.width.toString().padStart(3)} ◀ ▶`)
+      .moveCursorTo({ x, y: y + 1 })
+      .write(`${TermReal.height.toString().padStart(3)} ▲ ▼`)
+  }
+
+  
+  TermReal
+    .clear()
+    .write(str)
+  
+  const selectedArea = await Promise.all(squares.map(props => drawSelectedArea({ ...props, termString: str })))
+  TermReal
+    .write(selectedArea)
+}
+
+TermReal
+  .enterAlternateBuffer()
+  .hideCursor()
+  .disableLineWrap()
+  .startInputMode() 
+  .onResize({ immediate: true }, render)

@@ -1,7 +1,7 @@
-export type TLazyNumber = 
+export type TStrictFutureNumber = 
   { value: number }
 
 export type TFutureNumber = 
   | number
   | (() => number)
-  | TLazyNumber
+  | TStrictFutureNumber

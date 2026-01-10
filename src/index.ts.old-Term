@@ -1,0 +1,128 @@
+import { TermReal } from './Term.Real'
+import { TermTop } from './Term.Top'
+import { logger } from './Debugger'
+
+
+// import * as pty from "bun-pty"
+import cp from 'node:child_process'
+import { pty } from "./RuntimePty"
+
+
+const list: any = { activate: null, list: [] }
+
+teste_stream_não_interativo: {
+  // break teste_stream_não_interativo
+  const ping = cp.spawn('bash', [
+    '-c',
+    'while true; do echo "Tempo: $(date +%H:%M:%S:%N) | Rnd: $RANDOM"; sleep 0.1; done'
+  ], {
+    cwd: process.cwd(),
+    env: process.env,
+  })
+
+  const t = new TermTop({
+    position: { x: 5, y: 25 },
+    size: { columns: 40, rows: 5 },
+    stream: ping.stdout
+  })
+
+  // list.activate = t
+  list.list.push(t)
+  // setTimeout(() => t.resize(20, 20), 1000)
+}
+
+teste_stream_cmatrix: {
+  // break teste_stream_cmatrix
+  const cmatrix = pty.spawn('nano', [], {
+    name: 'xterm-256color',
+    cwd: process.cwd(),
+    env: process.env
+  })
+
+  const t = new TermTop({
+    position: { x: 50, y: 5 },
+    size: { columns: 30, rows: 10 },
+    stream: cmatrix
+  })
+
+  // list.activate = t
+  list.list.push(t)
+
+  // setTimeout(() => t.resize(30, 15), 3000)
+}
+
+teste_bash: {
+  // break teste_bash
+  const bash = pty.spawn('bash', [], {
+    cwd: process.cwd(),
+    env: process.env
+  })
+
+  const t = new TermTop({
+    position: { x: 5, y: 5 },
+    size: { columns: 40, rows: 24 },
+    stream: bash
+  })
+
+  list.activate = t
+  list.list.push(t)
+
+  setTimeout(() => t.resize(30, 15), 3000)
+}
+
+TermReal
+  .enterAlternateBuffer()
+  .hideCursor()
+  .startInputMode()
+  .onInput((data, key) => {    
+    // Ctrl+C
+    if (key.sequence === '\u0003') { 
+      TermReal.cleanup()
+      process.exit(0)
+      return
+    }
+    
+    // Ctrl+Z
+    if (key.sequence === '\x1A') {
+      logger.log('ctrl+Z pressed')
+      return
+    }
+
+    // Switch active terminal with ESC+1    
+    if (key.sequence === '\x1B1') {
+      const idx = list.list.indexOf(list.activate)
+      const nextIdx = (idx + 1) % list.list.length
+      list.activate = list.list[nextIdx]
+      logger.log(`Switched to process #${nextIdx + 1} ${list.activate.title}`)
+      return
+    }
+
+    // 
+    if (key.sequence === 'w') {
+      list.activate.write('\x1b[A') // seta para cima
+      return
+    }
+
+    if (key.sequence === 'a') {
+      list.activate.write('\x1b[D') // seta para esquerda
+      return
+    }
+
+    if (key.sequence === 's') {
+      list.activate.write('\x1b[B') // seta para baixo
+      return
+    }
+
+    if (key.sequence === 'd') {
+      list.activate.write('\x1b[C') // seta para direita
+      return
+    }
+
+    //
+    if (list.activate) {
+      list.activate.write(key.sequence || data)
+    }
+
+    //
+    logger.log(`Key pressed:`, { data, key })
+  })

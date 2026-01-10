@@ -1,0 +1,207 @@
+import { TermReal } from "./Term.Real"
+import { TermString } from "./Term.String"
+
+type TFnum = number | (() => number)
+
+type GridCellSizeConfig =
+  | { fixed: TFnum, responsive?: never }
+  | { responsive: TFnum, fixed?: never }
+
+type GridCellSize = {
+  anchor: GridCellSize | null,
+  getBaseValue: () => number,
+  getValue: () => number
+} & ({
+  type: 'fixed',
+} | {
+  type: 'responsive',
+  getTotal: () => number
+})
+
+class TermGrid {
+  #getWidth
+  #getHeight
+  #horizSizes
+  #vertSizes
+
+  constructor(config: {
+    width: TFnum,
+    height: TFnum,
+    horizConfigSizes: GridCellSizeConfig[],
+    vertConfigSizes: GridCellSizeConfig[]
+  }) {
+    const {
+      width, 
+      height,
+      horizConfigSizes, 
+      vertConfigSizes,
+    } = config
+
+    this.#getWidth = typeof width === 'number'
+      ? () => width
+      : width
+
+    this.#getHeight = typeof height === 'number'
+      ? () => height
+      : height
+
+    let anchor: GridCellSize
+    let zero: GridCellSize = { 
+      type: 'fixed', 
+      anchor: null, 
+      getBaseValue: () => 1, 
+      getValue: () => 1
+    }
+
+    anchor = zero
+    const getTotalHoriz = 
+      this.#calculateFreeSpaceForReponsive(horizConfigSizes, this.#getWidth)
+    this.#horizSizes = [
+      zero,
+      ...horizConfigSizes.map(sizeConfig =>
+        anchor = this.#createAnySize(anchor, sizeConfig, getTotalHoriz))
+    ]
+
+    anchor = zero
+    const getTotalVert = 
+      this.#calculateFreeSpaceForReponsive(vertConfigSizes, this.#getHeight)
+    this.#vertSizes = [
+      zero,
+      ...vertConfigSizes.map(sizeConfig =>
+        anchor = this.#createAnySize(anchor, sizeConfig, getTotalVert))
+    ]
+
+  }
+
+  #calculateFreeSpaceForReponsive(sizesConfs: GridCellSizeConfig[], totalAbsolute: () => number) {
+      return () => {
+        const usedSpace = sizesConfs
+          .filter(conf => 'fixed' in conf)
+          .reduce((sum, conf) => {
+            const val = (typeof conf.fixed === 'function') ? conf.fixed() : conf.fixed!
+            return sum + val
+          }, 0)
+        return totalAbsolute() - usedSpace
+      }
+  }
+
+  #createFixedSize(
+    anchor: GridCellSize | null,
+    getBaseValue: () => number
+  ): GridCellSize {
+    return {
+      type: 'fixed',
+      anchor,
+      getBaseValue: getBaseValue,
+      getValue: (anchor === null)
+        ? () => getBaseValue()
+        : () => anchor.getValue() + getBaseValue()
+    }
+  }
+
+  #createResponsiveSize(
+    anchor: GridCellSize | null,
+    getBaseValue: () => number,
+    getTotal: () => number,
+  ): GridCellSize {
+    return {
+      type: 'responsive',
+      anchor,
+      getBaseValue,
+      getTotal,
+      getValue: (anchor === null)
+        ? () => getTotal() * getBaseValue()
+        : () => anchor.getValue() + Math.floor(getTotal() * getBaseValue())
+    }
+  }
+
+  #createAnySize(
+    anchor: GridCellSize | null,
+    gridCellSizeConfig: GridCellSizeConfig,
+    getTotal: () => number,
+  ): GridCellSize {
+    if ('fixed' in gridCellSizeConfig) {
+      const baseValue = gridCellSizeConfig.fixed
+      const getBaseValue = (typeof baseValue === 'number') ? () => baseValue : baseValue
+      return this.#createFixedSize(anchor, getBaseValue!)
+    }
+
+    if ('responsive' in gridCellSizeConfig) {
+      const baseValue = gridCellSizeConfig.responsive
+      const getBaseValue = (typeof baseValue === 'number') ? () => baseValue : baseValue
+      return this.#createResponsiveSize(anchor, getBaseValue!, getTotal)
+    }
+
+    throw new Error('Not implemented')
+  }
+
+  #walkAllOver(callback: (args: { 
+    horiz: GridCellSize,
+    vert: GridCellSize,
+  }) => void) {
+    for (const horiz of this.#horizSizes) {
+      for (const vert of this.#vertSizes) {
+        callback({ horiz, vert })
+      }
+    }
+  }
+
+  get width() {
+    return this.#getWidth()
+  }
+
+  get height() {
+    return this.#getHeight()
+  }
+
+  debug() {
+    const strterm = new TermString()
+    strterm.moveCursorTo({ x: 0, y: 0 })
+
+    const title = (type: string, value: number, index: number) => {
+      const _type = type === 'fixed' ? 'F' : 'R'
+      return `\x1b[7m ${_type}:${index}:${value} \x1b[0m`
+    }
+
+    this.#walkAllOver(({ x, y, xType, yType, xId, yId }) => {
+      const pos = { x, y }
+
+
+      strterm
+        .moveCursorTo(pos).write('┼')
+        .moveCursorTo({ x: x+1, y: y+1 }).write('┼')
+    })
+      
+    
+    TermReal
+      .clear()
+      .write(strterm)
+  }
+}
+
+
+const r = "responsive"
+const f = "fixed"
+const grid = new TermGrid({
+  width: () => TermReal.width - 5,
+  height: () => TermReal.height - 5,
+  horizConfigSizes: [
+    { [f]: 15 },
+    { [r]: .5 },
+    { [r]: .5 },
+    { [f]: 15 },
+  ],
+  vertConfigSizes: [
+    { [f]: 15 },
+    { [r]: .5 },
+    { [r]: .5 },
+  ]
+})
+
+TermReal
+  .startInputMode()
+  .hideCursor()
+  .disableLineWrap()
+  .enterAlternateBuffer()
+  .clear()
+  .onResize({ immediate: true }, () => grid.debug())
