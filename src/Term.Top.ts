@@ -127,7 +127,7 @@ export class TermTop {
     const { cols, rows } = this.#dumbTerm
     const offset = this.#position
     const line = space.repeat(cols)
-    for (let y = 0; y < rows; y++)
+    for (let y = 0; y < rows; y++)  
       TermReal
         .moveCursorTo({ x: offset.x, y: offset.y + y })
         .write(line)

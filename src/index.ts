@@ -1,102 +1,53 @@
-import xterm from '@xterm/headless'
-import { TermReal } from './Term.Real';
+// servidor pra listar ips que acessaram a pagina sem express com bun ipv6 e ipv4
+import { serve } from "bun";
 
-class HeadlessRender {
-  private headless: xterm.Terminal = new xterm.Terminal({ allowProposedApi: true })
-  private offset = { x: 0, y: 0 }
-  private frame = ''
+const PORT = 3000;
+const ACCESS_LOG = "./access.log";
 
-  constructor() {
-  }
-
-  #renderColors(cell?: xterm.IBufferCell) {
-    if (!cell) return ''
-    let style = ''
-    // Extrai Atributos de Estilo da Célula
-    const bold      = cell.isBold()      ? ';1' : ''
-    const dim       = cell.isDim()       ? ';2' : ''
-    const italic    = cell.isItalic()    ? ';3' : ''
-    const underline = cell.isUnderline() ? ';4' : ''
-    const inverse   = cell.isInverse()   ? ';7' : ''
-    const blink     = cell.isBlink()     ? ';5' : ''
-    style += `${bold}${dim}${italic}${underline}${inverse}${blink}`
-    // Pega as cores do texto da célula
-    if (cell.isFgPalette()) {
-      style += `;38;5;${cell.getFgColor()}`
-    } else if (cell.isFgRGB()) {
-      const rgb = cell.getFgColor()
-      style += `;38;2;${(rgb >> 16) & 0xFF};${(rgb >> 8) & 0xFF};${rgb & 0xFF}`
-    }
-    // Pega as cores de fundo da célula
-    if (cell.isBgPalette()) {
-      style += `;48;5;${cell.getBgColor()}`
-    } else if (cell.isBgRGB()) {
-      const rgb = cell.getBgColor()
-      style += `;48;2;${(rgb >> 16) & 0xFF};${(rgb >> 8) & 0xFF};${rgb & 0xFF}`
-    }
-    // Retorna o código de escape ANSI para os estilos
-    return `\x1b[0${style}m`
-  }
-
-  #renderVirtualCursor(x: number, y: number) {
-    const { cursorX, cursorY } = this.headless.buffer.active
-    if (y === cursorY && x === cursorX)
-      return `\x1b[7m` // inverter cores para o cursor
-    return ''
-  }
-
-  #render() {
-    const term = this.headless
-    const buffer = term.buffer.active
-    const offset = this.offset
-    this.frame = ''
-    for (let y = 0; y < term.rows; y++) {
-      let line = buffer.getLine(buffer.baseY + y)
-      if (!line) continue
-      this.frame += `\x1b[${offset.y + y + 1};${offset.x + 1}H`
-      for (let x = 0; x < term.cols; x++) {
-        const cell = line?.getCell(x)
-        this.frame += this.#renderColors(cell)
-        this.frame += this.#renderVirtualCursor(x, y)
-        this.frame += `${cell?.getChars() || ' '}`
-        this.frame += `\x1b[0m` // resetar estilos após cada caractere
-      }
-      this.frame += '\n'
-    }
-  }
-
-  getFrame(): string {
-    return this.frame.trim()
-  }
-
-  getCharAt(x: number, y: number): string {
-    const line = this.headless.buffer.active.getLine(y)
-    const cell = line?.getCell(x)
-    return cell?.getChars() || ' '
-  }
-
-  resize(cols: number, rows: number) {
-    this.headless.resize(cols, rows)
-  }
-
-  write(content: string) {
-    const { promise, resolve, reject } = Promise.withResolvers<string>()
-    this.headless.write(content, () => {
-      this.#render()
-      resolve(this.frame)
-    })
-    return promise
-  }
+function detectIpType(ip: string | null): string {
+  if (!ip) return "unknown";
+  if (ip.includes(":")) return "IPv6";
+  if (ip.includes(".")) return "IPv4";
+  return "unknown";
 }
 
+serve({
+  port: PORT,
+  hostname: "::", // Escuta em IPv6 (aceita IPv4 também via dual-stack)
+  async fetch(request) {
+    // Tenta obter o IP de vários headers
+    const clientIp =
+      request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      request.headers.get("x-real-ip") ||
+      request.headers.get("cf-connecting-ip") ||
+      request.headers.get("fastly-client-ip") ||
+      request.headers.get("true-client-ip") ||
+      request.headers.get("x-client-ip") ||
+      request.headers.get("x-forwarded") ||
+      request.headers.get("forwarded-for") ||
+      request.headers.get("forwarded") ||
+      request.headers.get("via") ||
+      request.headers.get("remote-addr") ||
+      request.socket.remoteAddress ||
+      "unknown";
 
-const headlessRenderer = new HeadlessRender()
+    const ipType = detectIpType(clientIp);
+    const timestamp = new Date().toISOString();
+    
+    // Log detalhado
+    const logEntry = `${timestamp} - ${ipType} - ${clientIp}\n`;
+    await Bun.write(ACCESS_LOG, logEntry, { append: true });
 
-headlessRenderer.write('texzvcxzcvcxzvs\x1b[31;41msadfsadfsadfte\x1b[0m')
+    // Resposta informativa com o IP detectado
+    const responseText = `HELLO\n`;
+    
+    return new Response(responseText, { 
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8"
+      }
+    });
+  },
+});
 
-TermReal.onResize({immediate: true}, async () => {
-  TermReal.clear()
-  headlessRenderer.resize(TermReal.width, TermReal.height)
-  TermReal
-    .write(headlessRenderer.getFrame())
-})
+console.log(`Server running on http://[::]:${PORT}/ (IPv4 and IPv6)`);
